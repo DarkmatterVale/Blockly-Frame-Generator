@@ -24,6 +24,23 @@ class frame_generator:
     def generate_spin_frame( self, base_directory ):
         return False
 
+    # Function that returns the block name and other useful information about the blocks
+    def get_blocks( self, path ):
+        # Walking the directory to get all of the names of the blocks
+        for dirs, files, dir_names in os.walk( path ):
+            file = os.open( files, 'r' ).read()
+
+            # TO DO: Parse files to find blocks
+
+        return ""
+
+    # Function that returns the file names of all of the block files
+    def get_file_name( self, path ):
+        for dirs, files, dir_names in os.walk( path ):
+            pass
+        
+        return ""
+
     # Opens a directory chooser dialog window and returns the path of the directory the user chose
     def askdirectory(self, **options):
         return apply(self.Chooser, (), options).show()
