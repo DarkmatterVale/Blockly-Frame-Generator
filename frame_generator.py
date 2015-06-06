@@ -2,6 +2,8 @@ __author__ = 'Vale Tolpegin'
 
 # Importing relevant classes
 import sys, os, re
+import argparse
+from tkCommonDialog import Dialog
 
 class frame_generator:
     # Initialization method
@@ -9,36 +11,39 @@ class frame_generator:
         pass
     
     # Function that delegates frame file generation for every language that was requested
-    def generate_frame_files( self, base_directory, languages ):
-        for language in languages:
-            if language == "propc":
-                return self.generate_c_frame( base_directory )
-            elif language == "spin":
-                return self.generate_spin_frame( self, base_directory )
+    def generate_frame_files( self, base_directory, language ):
+        if language == "propc":
+            self.generate_c_frame( base_directory )
+        elif language == "spin":
+            self.generate_spin_frame( base_directory )
+
+        return True
 
     # Function that actually generates the frame file for the C language
     def generate_c_frame( self, base_directory ):
-        return False
-    
+        self.get_blocks( base_directory, 'propc' )
+
     # Function that actually generates the frame file for the Spin language
     def generate_spin_frame( self, base_directory ):
         return False
 
     # Function that returns the block name and other useful information about the blocks
-    def get_blocks( self, path ):
+    def get_blocks( self, path, language ):
         # Walking the directory to get all of the names of the blocks
-        for dirs, files, dir_names in os.walk( path ):
-            file = os.open( files, 'r' ).read()
-
-            # TO DO: Parse files to find blocks
-
+        for root, dir, file in os.walk( path + "/generators/" + language + "/" ):
+            for file_name in file:
+                if '.js' in str( file_name ):
+                    print str( file_name )
+    
+        # TO DO: Parse files to find blocks
+        
         return ""
 
     # Function that returns the file names of all of the block files
     def get_file_name( self, path ):
         for dirs, files, dir_names in os.walk( path ):
             pass
-        
+
         return ""
 
     # Opens a directory chooser dialog window and returns the path of the directory the user chose
@@ -56,24 +61,29 @@ class frame_generator:
             self.directory = result # compatibility
             return result
 
-class arg_parser:
-    # Initialization method for the acommand line arguement parser
-    def init( self, *args, **kwargs ):
-        pass
-
 if __name__ == '__main__':
     # Get language & other command line arguements
-    command_line_arg_parser = arg_parser()
-    # TO DO: add way to get arguements
+    parser = argparse.ArgumentParser( description="frame generator for BlocklyProp" )
+    parser.add_argument( '-c', help='Generate the propc frame file' )
+    parser.add_argument( '-s', help='Generate the spin frame file' )
+    args = parser.parse_args()
 
     # Instantiate a frame_generator object
     frame_creator = frame_generator()
 
     # Get base directory
     base_directory = frame_creator.askdirectory()
-
-    # Call frame_generator object to parse and generate frame file(s)
-    generated_truefalse = frame_creator.generate_frame_files( base_directory, languages )
+    
+    # Setting up variables
+    languages = ""
+    generated_truefalse = False
+    
+    # If C or Spin is supposed to be parsed, parse them & generate the frame files
+    if 'c' in args:
+        generated_truefalse = frame_creator.generate_frame_files( base_directory, 'propc' )
+    
+    if 's' in args:
+        generated_truefalse = frame_creator.generate_frame_files( base_directory, 'spin' )
 
     # If the files were successfully generated
     if generated_truefalse:
