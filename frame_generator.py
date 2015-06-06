@@ -21,7 +21,7 @@ class frame_generator:
 
     # Function that actually generates the frame file for the C language
     def generate_c_frame( self, base_directory ):
-        self.get_blocks( base_directory, 'propc' )
+        blocks = self.get_blocks( base_directory, 'propc' )
 
     # Function that actually generates the frame file for the Spin language
     def generate_spin_frame( self, base_directory ):
@@ -29,22 +29,39 @@ class frame_generator:
 
     # Function that returns the block name and other useful information about the blocks
     def get_blocks( self, path, language ):
+        blocks = ""
+        
         # Walking the directory to get all of the names of the blocks
         for root, dir, file in os.walk( path + "/generators/" + language + "/" ):
             for file_name in file:
                 if '.js' in str( file_name ):
-                    print str( file_name )
+                    file_blocks = open( path + "/generators/" + language + "/" + str( file_name ), 'r' ).read()
+    
+                    file_blocks = file_blocks.split( '\n' )
+                    
+                    for line in file_blocks:
+                        line = line.split( ' ' )
+
+                        if 'Blockly.Language' in line[0]:
+                            name = re.sub( 'Blockly.Language.', '', line[0] )
+                                
+                            blocks += "," + name
     
         # TO DO: Parse files to find blocks
         
-        return ""
+        print blocks.split( ',' )
+        return blocks
 
     # Function that returns the file names of all of the block files
-    def get_file_name( self, path ):
-        for dirs, files, dir_names in os.walk( path ):
-            pass
+    def get_file_name( self, path, language ):
+        names = ""
+        
+        for root, dir, file in os.walk( path + "/generators/" + language + "/" ):
+            for file_name in file:
+                if '.js' in str( file_name ):
+                    names += " " + str( file_name )
 
-        return ""
+        return names
 
     # Opens a directory chooser dialog window and returns the path of the directory the user chose
     def askdirectory(self, **options):
