@@ -44,13 +44,13 @@ class frame_generator:
         scripts += '\n'
         
         assembled = ""
-        assembled += open( os.getcwd() + '/templates/header_template.html', 'r' ).read()
+        assembled += open( os.getcwd() + '/templates/header_template_c.html', 'r' ).read()
         assembled += scripts
         assembled += open( os.getcwd() + '/templates/body_template.html', 'r' ).read()
         assembled += keepers
         assembled += open( os.getcwd() + '/templates/footer_template.html', 'r' ).read()
         
-        file = open( 'framec.html', 'w' )
+        file = open( base_directory + '/framec.html', 'w' )
         file.write( assembled )
         file.close()
 
@@ -75,13 +75,13 @@ class frame_generator:
             scripts += '\n\t' + '<script type="text/javascript" src="generators/spin/' + name + '"></script>'
         
         assembled = ""
-        assembled += open( os.getcwd() + '/templates/header_template.html', 'r' ).read()
+        assembled += open( os.getcwd() + '/templates/header_template_spin.html', 'r' ).read()
         assembled += scripts
         assembled += open( os.getcwd() + '/templates/body_template.html', 'r' ).read()
         assembled += keepers
         assembled += open( os.getcwd() + '/templates/footer_template.html', 'r' ).read()
         
-        file = open( 'frame.html', 'w' )
+        file = open( base_directory + '/frame.html', 'w' )
         file.write( assembled )
         file.close()
 
