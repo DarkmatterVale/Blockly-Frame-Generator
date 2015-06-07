@@ -21,15 +21,77 @@ class frame_generator:
 
     # Function that actually generates the frame file for the C language
     def generate_c_frame( self, base_directory ):
-        blocks = self.get_blocks( base_directory, 'propc' )
+        bad_c_blocks = ""
+        bad_c_blocks += "set_ramp_step_toward,"
+        
+        blocks = self.get_blocks( base_directory, 'propc', bad_c_blocks )
+        names = self.get_file_names( base_directory, 'propc' )
+    
+        keepers = ""
+        scripts = ""
+        
+        for block in blocks:
+            if block != "":
+                keepers += '\n\t\t\t"' + block + '",'
+    
+        keepers = keepers[ 0 : len(keepers) - 1 ]
+        keepers += '\n'
+    
+        for name in names:
+            if name != "":
+                scripts += '\n\t\t<script type="text/javascript" src="generators/propc/' + name + '"></script>'
+        
+        scripts += '\n'
+        
+        assembled = ""
+        assembled += open( os.getcwd() + '/templates/header_template.html', 'r' ).read()
+        assembled += scripts
+        assembled += open( os.getcwd() + '/templates/body_template.html', 'r' ).read()
+        assembled += keepers
+        assembled += open( os.getcwd() + '/templates/footer_template.html', 'r' ).read()
+        
+        file = open( 'framec.html', 'w' )
+        file.write( assembled )
+        file.close()
 
     # Function that actually generates the frame file for the Spin language
     def generate_spin_frame( self, base_directory ):
-        return False
+        bad_spin_blocks = ""
+        
+        blocks = self.get_blocks( base_directory, 'Spin', bad_spin_blocks )
+        names = self.get_file_names( base_directory, 'spin' )
+        
+        keepers = ""
+        scripts = ""
+        
+        for block in blocks:
+            if block != "":
+                keepers += '\n\t\t\t"' + block + '",'
+
+        keepers = keepers[ 0 : len(keepers) - 1 ]
+        keepers += '\n'
+
+        for name in names:
+            scripts += '\n\t' + '<script type="text/javascript" src="generators/spin/' + name + '"></script>'
+        
+        assembled = ""
+        assembled += open( os.getcwd() + '/templates/header_template.html', 'r' ).read()
+        assembled += scripts
+        assembled += open( os.getcwd() + '/templates/body_template.html', 'r' ).read()
+        assembled += keepers
+        assembled += open( os.getcwd() + '/templates/footer_template.html', 'r' ).read()
+        
+        file = open( 'frame.html', 'w' )
+        file.write( assembled )
+        file.close()
+
 
     # Function that returns the block name and other useful information about the blocks
-    def get_blocks( self, path, language ):
+    def get_blocks( self, path, language, bad_blocks ):
         blocks = ""
+        
+        if bad_blocks == "":
+            bad_blocks = "----------"
         
         # Walking the directory to get all of the names of the blocks
         for root, dir, file in os.walk( path + "/generators/" + language + "/" ):
@@ -41,27 +103,56 @@ class frame_generator:
                     
                     for line in file_blocks:
                         line = line.split( ' ' )
-
+                        
+                        name = ""
                         if 'Blockly.Language' in line[0]:
                             name = re.sub( 'Blockly.Language.', '', line[0] )
+                        elif 'Blockly.' + language + '.' in line[0]:
+                            name = re.sub( 'Blockly.' + language + '.', '', line[0] )
+                        
+                        block_accept = True
+                        if 'propc' in language:
+                            for bad_block in bad_blocks.split( ',' ):
+                                if bad_block in name:
+                                    block_accept = False
+                                    
+                                    break
+                        elif 'spin' in language:
+                            for bad_block in bad_blocks.split( ',' ):
+                                if bad_block in name:
+                                    block_accept = False
                                 
-                            blocks += "," + name
+                                    break
+                        
+                        if block_accept:
+                            if '.' not in name and name not in blocks:
+                                blocks += "," + name
+                            elif '.' in name:
+                                name = re.sub( '.*', '', name )
+                            
+                                if name not in blocks:
+                                    blocks += "," + name
+                                                
+                            if '.' not in name and name not in blocks:
+                                blocks += "," + name
+                            elif '.' in name:
+                                name = re.sub( '.*', '', name )
+                                                                
+                                if name not in blocks:
+                                    blocks += "," + name
     
-        # TO DO: Parse files to find blocks
-        
-        print blocks.split( ',' )
-        return blocks
+        return blocks.split( ',' )
 
     # Function that returns the file names of all of the block files
-    def get_file_name( self, path, language ):
+    def get_file_names( self, path, language ):
         names = ""
         
         for root, dir, file in os.walk( path + "/generators/" + language + "/" ):
             for file_name in file:
                 if '.js' in str( file_name ):
-                    names += " " + str( file_name )
+                    names += "," + str( file_name )
 
-        return names
+        return names.split( ',' )
 
     # Opens a directory chooser dialog window and returns the path of the directory the user chose
     def askdirectory(self, **options):
